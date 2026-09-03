@@ -22,6 +22,7 @@ interface SettingsStore {
   load: () => Promise<void>;
   set: (key: string, value: unknown) => Promise<void>;
   setQuietHours: (startH: number, startM: number, endH: number, endM: number) => Promise<void>;
+  reset: () => void;
 }
 
 function robotIds(): string[] {
@@ -104,4 +105,7 @@ export const useSettings = create<SettingsStore>((set, get) => ({
       set({ saving: null, error: (e as Error).message });
     }
   },
+
+  reset: () =>
+    set({ loading: false, loaded: false, saving: null, error: null, settings: null, dnd: null, householdId: null }),
 }));

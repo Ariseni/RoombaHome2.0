@@ -54,6 +54,21 @@ interface SessionStore {
   clearError: () => void;
 }
 
+async function resetAccountStores(): Promise<void> {
+  const [{ useFavorites }, { useHistory }, { useMaps }, { useSchedules }, { useSettings }] = await Promise.all([
+    import('./favorites'),
+    import('./history'),
+    import('./maps'),
+    import('./schedules'),
+    import('./settings'),
+  ]);
+  useFavorites.getState().reset();
+  useHistory.getState().reset();
+  useMaps.getState().reset();
+  useSchedules.getState().reset();
+  useSettings.getState().reset();
+}
+
 let session: RobotSession | null = null;
 let appStateSub: { remove: () => void } | null = null;
 const log = (msg: string, ...args: unknown[]) => {
@@ -213,6 +228,7 @@ export const useSession = create<SessionStore>((set, get) => {
         timeline: [],
         liveMap: { samples: [], lastSeq: -1, mapUrl: null, active: false },
       });
+      await resetAccountStores();
     },
 
     selectRobot: async (blid) => {
@@ -220,6 +236,7 @@ export const useSession = create<SessionStore>((set, get) => {
       if (!creds) return;
       await saveSelectedRobot(blid);
       set({ selectedBlid: blid, robot: emptyState(), dockReports: [], timeline: [] });
+      await resetAccountStores();
       await connect(creds, blid);
     },
 

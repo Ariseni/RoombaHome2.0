@@ -24,6 +24,7 @@ interface SchedulesStore {
   setEnabled: (s: Schedule, enabled: boolean) => Promise<void>;
   create: (input: Omit<NewScheduleInput, 'robotId' | 'commands'> & { wholeHouse?: boolean }) => Promise<boolean>;
   remove: (s: Schedule) => Promise<void>;
+  reset: () => void;
 }
 
 function robotIds(): string[] {
@@ -67,22 +68,29 @@ export const useSchedules = create<SchedulesStore>((set, get) => ({
 
   setEnabled: async (s, enabled) => {
     const session = getSession();
+    if (!session) return;
+    await get().load();
     const householdId = get().householdId;
-    if (!session || !householdId) return;
-    const siblings = get().items.filter((x) => x.household_schedule_id === s.household_schedule_id);
-    const next = siblings.map((x) => (x.schedule_id === s.schedule_id ? patchSchedule(x, { enabled }) : x));
-    set({ items: get().items.map((x) => (x.schedule_id === s.schedule_id ? patchSchedule(x, { enabled }) : x)) });
+    if (!householdId) return;
+    const fresh = get().items.find(
+      (x) => x.schedule_id === s.schedule_id && x.household_schedule_id === s.household_schedule_id,
+    );
+    if (!fresh) {
+      set({ error: 'That schedule is gone. The list was refreshed.' });
+      return;
+    }
+    const siblings = get().items.filter((x) => x.household_schedule_id === fresh.household_schedule_id);
+    const next = siblings.map((x) => (x.schedule_id === fresh.schedule_id ? patchSchedule(x, { enabled }) : x));
     try {
-      await session.rest.updateSchedules(householdId, s.household_schedule_id, updateSchedulesBody(next));
-      await get().load();
+      await session.rest.updateSchedules(householdId, fresh.household_schedule_id, updateSchedulesBody(next));
     } catch (e) {
       set({ error: (e as Error).message });
-      await get().load();
     }
+    await get().load();
   },
 
   create: async (input) => {
-    if (!get().householdId) await get().load();
+    await get().load();
     const session = getSession();
     const householdId = get().householdId;
     if (!session || !householdId) {
@@ -117,18 +125,31 @@ export const useSchedules = create<SchedulesStore>((set, get) => ({
 
   remove: async (s) => {
     const session = getSession();
+    if (!session) return;
+    await get().load();
     const householdId = get().householdId;
-    if (!session || !householdId) return;
-    const remaining = get().items.filter((x) => x.household_schedule_id === s.household_schedule_id && x.schedule_id !== s.schedule_id);
+    if (!householdId) return;
+    const stillThere = get().items.some(
+      (x) => x.schedule_id === s.schedule_id && x.household_schedule_id === s.household_schedule_id,
+    );
+    if (!stillThere) {
+      set({ error: 'That schedule is already gone. The list was refreshed.' });
+      return;
+    }
+    const remaining = get().items.filter(
+      (x) => x.household_schedule_id === s.household_schedule_id && x.schedule_id !== s.schedule_id,
+    );
     try {
       if (remaining.length === 0) {
         await session.rest.deleteScheduleContainer(householdId, s.household_schedule_id);
       } else {
         await session.rest.updateSchedules(householdId, s.household_schedule_id, updateSchedulesBody(remaining));
       }
-      set((st) => ({ items: st.items.filter((x) => x.schedule_id !== s.schedule_id) }));
     } catch (e) {
       set({ error: (e as Error).message });
     }
+    await get().load();
   },
+
+  reset: () => set({ loading: false, loaded: false, error: null, householdId: null, items: [] }),
 }));

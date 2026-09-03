@@ -74,8 +74,8 @@ export default function SchedulesScreen() {
         </Text>
         <Text style={font.title}>Schedules</Text>
         <Text style={[font.small, { marginBottom: spacing.sm }]}>
-          Recurring cleans for this household. Enabling or disabling sends the full container back — omitting a
-          schedule deletes it.
+          Recurring cleans for this household. The list is refreshed from iRobot before enable, disable, or delete
+          so a stale copy cannot wipe schedules created on another device.
         </Text>
 
         {error ? <Text style={styles.error}>{error}</Text> : null}

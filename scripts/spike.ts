@@ -2,7 +2,7 @@
  * Protocol spike: validates the whole cloud chain against your real robot
  * from Node, before any UI is involved.
  *
- *   ROOMBA_USER=you@example.com ROOMBA_PASS=secret ROOMBA_COUNTRY=DE npx tsx scripts/spike.ts
+ *   ROOMBA_USER=... ROOMBA_PASS=... ROOMBA_COUNTRY=DE npx tsx scripts/spike.ts
  *
  * Options (env):
  *   ROOMBA_BLID=...       pick a robot when the account has several

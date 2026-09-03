@@ -13,6 +13,7 @@ interface HistoryStore {
   items: MissionHistoryEntry[];
   load: () => Promise<void>;
   loadMore: () => Promise<void>;
+  reset: () => void;
 }
 
 export const useHistory = create<HistoryStore>((set, get) => ({
@@ -61,4 +62,6 @@ export const useHistory = create<HistoryStore>((set, get) => ({
       set({ loadingMore: false, error: (e as Error).message });
     }
   },
+
+  reset: () => set({ loading: false, loaded: false, loadingMore: false, error: null, items: [] }),
 }));

@@ -57,7 +57,7 @@ export default function LoginScreen() {
               autoCorrect={false}
               keyboardType="email-address"
               textContentType="emailAddress"
-              placeholder="you@example.com"
+              placeholder="Email"
               placeholderTextColor={colors.textDim}
             />
             <Text style={styles.label}>Password</Text>

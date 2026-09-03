@@ -21,6 +21,7 @@ interface FavoritesStore {
   createFromSelection: (name: string) => Promise<Favorite | null>;
   rename: (fav: Favorite, name: string) => Promise<void>;
   remove: (fav: Favorite) => Promise<void>;
+  reset: () => void;
 }
 
 export const useFavorites = create<FavoritesStore>((set, get) => ({
@@ -106,4 +107,6 @@ export const useFavorites = create<FavoritesStore>((set, get) => ({
       set({ error: (e as Error).message });
     }
   },
+
+  reset: () => set({ loading: false, loaded: false, error: null, items: [] }),
 }));

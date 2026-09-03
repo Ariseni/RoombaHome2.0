@@ -79,7 +79,8 @@ export function householdIdForRobot(households: Household[], ids: string[]): str
   for (const h of households) {
     if (h.robot_ids.some((id) => set.has(id))) return h.household_id;
   }
-  return households[0]?.household_id ?? null;
+  if (households.length === 1) return households[0].household_id;
+  return null;
 }
 
 function parseTime(raw: unknown): { days: number[]; hour: number; minute: number } {

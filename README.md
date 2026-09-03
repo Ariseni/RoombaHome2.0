@@ -18,11 +18,13 @@ Not affiliated with iRobot. Initial robot Wi-Fi setup, account creation, firmwar
 
 Close the official Roomba app first (iRobot limits concurrent sessions).
 
+Set `ROOMBA_USER`, `ROOMBA_PASS`, and optionally `ROOMBA_COUNTRY` in the environment, then:
+
 ```bash
-ROOMBA_USER=you@example.com ROOMBA_PASS='secret' ROOMBA_COUNTRY=DE npm run spike
+npm run spike
 ```
 
-Optional: `ROOMBA_FIND=1` (chime), `ROOMBA_WATCH=30`, `ROOMBA_LIVEMAP=1`, `ROOMBA_DUMP=./tmp-dump`.
+Optional flags: `ROOMBA_FIND=1` (chime), `ROOMBA_WATCH=30`, `ROOMBA_LIVEMAP=1`, `ROOMBA_DUMP` (directory for raw dumps). Do not put account credentials in files that are committed.
 
 ## Install on the S24+
 

@@ -60,6 +60,8 @@ describe('schedules', () => {
     const list = parseHouseholds({ households: [other, household] });
     expect(householdIdForRobot(list, ['ROBOT32'])).toBe('HH1');
     expect(householdIdForRobot(list, ['BLID', 'ROBOT32'])).toBe('HH1');
+    expect(householdIdForRobot(list, ['UNKNOWN'])).toBeNull();
+    expect(householdIdForRobot(parseHouseholds({ households: [household] }), ['UNKNOWN'])).toBe('HH1');
   });
 
   it('parses containers, unwraps commands, and drops deleted', () => {
