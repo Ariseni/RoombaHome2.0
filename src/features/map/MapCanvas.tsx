@@ -5,16 +5,23 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 
 import type { MapModel } from '@/protocol/maps/bundle';
-import { type Bounds, type Point, type PolygonCoords, isValidBounds, pointInPolygon } from '@/protocol/maps/geometry';
+import { type Bounds, type Point, type PolygonCoords, type Ring, isValidBounds, pointInPolygon } from '@/protocol/maps/geometry';
 import type { PositionSample } from '@/protocol/models/livemap';
 import { colors, roomPalette } from '@/ui/theme';
 import type { SelectedArea } from '@/store/maps';
 
+export interface RoomHighlight {
+  id: string;
+  coverage: number | null;
+}
+
 interface Props {
   model: MapModel;
   selected: SelectedArea[];
-  onToggle: (area: SelectedArea) => void;
+  onToggle?: (area: SelectedArea) => void;
   liveSamples?: PositionSample[];
+  highlights?: RoomHighlight[];
+  showMissionLayers?: boolean;
   width: number;
   height: number;
 }
@@ -39,6 +46,20 @@ function toScreen(p: Point, v: ViewBox): Point {
   return [p[0] * v.scale + v.ox, -p[1] * v.scale + v.oy];
 }
 
+function linePathOf(rings: Ring[], v: ViewBox) {
+  const p = Skia.Path.Make();
+  for (const ring of rings) {
+    if (ring.length === 0) continue;
+    const [x0, y0] = toScreen(ring[0], v);
+    p.moveTo(x0, y0);
+    for (let i = 1; i < ring.length; i++) {
+      const [x, y] = toScreen(ring[i], v);
+      p.lineTo(x, y);
+    }
+  }
+  return p;
+}
+
 function pathOf(polygons: PolygonCoords[], v: ViewBox) {
   const p = Skia.Path.Make();
   for (const poly of polygons) {
@@ -60,7 +81,13 @@ function hexWithAlpha(hex: string, a: string): string {
   return hex.length === 7 ? `${hex}${a}` : hex;
 }
 
-export function MapCanvas({ model, selected, onToggle, liveSamples, width, height }: Props) {
+function hexAlpha(n: number): string {
+  return Math.round(Math.min(1, Math.max(0, n)) * 255)
+    .toString(16)
+    .padStart(2, '0');
+}
+
+export function MapCanvas({ model, selected, onToggle, liveSamples, highlights, showMissionLayers, width, height }: Props) {
   const v = useMemo(() => viewBox(model.bounds, width, height), [model.bounds, width, height]);
 
   const scale = useSharedValue(1);
@@ -86,6 +113,7 @@ export function MapCanvas({ model, selected, onToggle, liveSamples, width, heigh
     });
 
   const tapJs = Gesture.Tap().runOnJS(true).onEnd((e) => {
+    if (!onToggle) return;
     const s = scale.value;
     const mx = (e.x - tx.value - width / 2) / s + width / 2;
     const my = (e.y - ty.value - height / 2) / s + height / 2;
@@ -113,16 +141,26 @@ export function MapCanvas({ model, selected, onToggle, liveSamples, width, heigh
     transform: [{ translateX: tx.value }, { translateY: ty.value }, { scale: scale.value }],
   }));
 
+  const highlightById = useMemo(() => new Map((highlights ?? []).map((h) => [h.id, h.coverage])), [highlights]);
+
   const roomPaths = useMemo(
     () =>
-      model.rooms.map((r, i) => ({
-        id: r.id,
-        color: roomPalette[i % roomPalette.length],
-        path: pathOf(r.polygons, v),
-        selected: selected.some((s) => s.id === r.id && s.type === 'rid'),
-      })),
-    [model.rooms, selected, v],
+      model.rooms.map((r, i) => {
+        const coverage = highlightById.get(r.id);
+        const highlighted = highlightById.has(r.id);
+        const alpha = highlighted ? (coverage == null ? '99' : hexAlpha(0.25 + Math.min(1, coverage) * 0.65)) : '55';
+        return {
+          id: r.id,
+          color: roomPalette[i % roomPalette.length],
+          fill: highlighted ? hexWithAlpha(colors.success, alpha) : hexWithAlpha(roomPalette[i % roomPalette.length], alpha),
+          path: pathOf(r.polygons, v),
+          selected: selected.some((s) => s.id === r.id && s.type === 'rid') || highlighted,
+        };
+      }),
+    [model.rooms, selected, v, highlightById],
   );
+  const coveragePath = useMemo(() => (showMissionLayers ? pathOf(model.coverage, v) : null), [model.coverage, showMissionLayers, v]);
+  const trailPath = useMemo(() => (showMissionLayers ? linePathOf(model.trajectories, v) : null), [model.trajectories, showMissionLayers, v]);
   const zonePaths = useMemo(
     () =>
       model.zones.map((z) => ({
@@ -149,10 +187,12 @@ export function MapCanvas({ model, selected, onToggle, liveSamples, width, heigh
                 <Path
                   key={r.id}
                   path={r.path}
-                  color={hexWithAlpha(r.color, r.selected ? 'CC' : '55')}
+                  color={r.fill}
                   style="fill"
                 />
               ))}
+              {coveragePath ? <Path path={coveragePath} color="rgba(56,189,248,0.28)" style="fill" /> : null}
+              {trailPath ? <Path path={trailPath} color={colors.accent} style="stroke" strokeWidth={2} /> : null}
               {roomPaths.map((r) => (
                 <Path key={`${r.id}-s`} path={r.path} color={r.selected ? colors.accent : hexWithAlpha(r.color, 'AA')} style="stroke" strokeWidth={r.selected ? 2.5 : 1} />
               ))}

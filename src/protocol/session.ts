@@ -331,15 +331,13 @@ export class RobotSession extends Emitter<SessionEvents> {
     }
   }
 
-  /** Writes a setting into rw-settings (one key, one value). */
+  /**
+   * Writes one key into rw-settings. Dotted names (`audio.volume`) are
+   * literal keys — do not nest them.
+   */
   async setSetting(key: string, value: unknown): Promise<void> {
     if (!this.shadows) throw new MqttError('Not connected');
-    const desired: JsonObject = {};
-    if (key.includes('.')) {
-      const [outer, inner] = key.split('.', 2);
-      desired[outer] = { [inner]: value };
-    } else desired[key] = value;
-    await this.shadows.update('rw-settings', desired);
+    await this.shadows.update('rw-settings', { [key]: value });
   }
 
   /** Subscribe to an arbitrary topic and forward messages. */

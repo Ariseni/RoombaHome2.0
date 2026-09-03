@@ -1,14 +1,18 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { simpleCommand } from '@/protocol/commands';
 import { dockStateInfo } from '@/protocol/models/dock';
 import { errorText, notReadyLabel } from '@/protocol/models/errors';
 import { roomsSummary } from '@/protocol/models/favorites';
+import { historyWhen } from '@/protocol/models/history';
+import { formatNext, nextOccurrence } from '@/protocol/models/schedules';
 import { type Activity, activityOf, phaseLabel } from '@/protocol/models/shadow';
 import { useFavorites } from '@/store/favorites';
+import { useHistory } from '@/store/history';
+import { useSchedules } from '@/store/schedules';
 import { useSession } from '@/store/session';
 import { Button, Card, Pill, Screen, Stat } from '@/ui/components';
 import { colors, font, radius, spacing } from '@/ui/theme';
@@ -47,10 +51,32 @@ export default function HomeScreen() {
   const loadFavorites = useFavorites((s) => s.load);
   const favoritesLoaded = useFavorites((s) => s.loaded);
   const runFavorite = useFavorites((s) => s.run);
+  const schedules = useSchedules((s) => s.items);
+  const loadSchedules = useSchedules((s) => s.load);
+  const schedulesLoaded = useSchedules((s) => s.loaded);
+  const lastMission = useHistory((s) => s.items[0] ?? null);
+  const loadHistory = useHistory((s) => s.load);
+  const historyLoaded = useHistory((s) => s.loaded);
 
   useEffect(() => {
     if (status === 'connected' && !favoritesLoaded) loadFavorites().catch(() => undefined);
   }, [status, favoritesLoaded, loadFavorites]);
+
+  useEffect(() => {
+    if (status === 'connected' && !schedulesLoaded) loadSchedules().catch(() => undefined);
+  }, [status, schedulesLoaded, loadSchedules]);
+
+  useEffect(() => {
+    if (status === 'connected' && !historyLoaded) loadHistory().catch(() => undefined);
+  }, [status, historyLoaded, loadHistory]);
+
+  const nextClean = useMemo(() => {
+    const ranked = schedules
+      .map((s) => ({ s, at: nextOccurrence(s) }))
+      .filter((x): x is { s: (typeof schedules)[number]; at: Date } => x.at != null)
+      .sort((a, b) => a.at.getTime() - b.at.getTime());
+    return ranked[0] ?? null;
+  }, [schedules]);
 
   const activity = activityOf(robot);
   const name = robot.name ?? robotInfo?.name ?? 'Roomba';
@@ -61,11 +87,11 @@ export default function HomeScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await Promise.all([refreshState(), loadFavorites()]);
+      await Promise.all([refreshState(), loadFavorites(), loadSchedules(), loadHistory()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshState, loadFavorites]);
+  }, [refreshState, loadFavorites, loadSchedules, loadHistory]);
 
   const cmd = (c: Parameters<typeof simpleCommand>[0], label: string) => () => sendCommand(simpleCommand(c), label);
 
@@ -159,6 +185,36 @@ export default function HomeScreen() {
           onDock={cmd('dock', 'dock')}
           onFind={cmd('find', 'find')}
         />
+
+        <Card>
+          <View style={styles.dockRow}>
+            <Ionicons name="time" size={18} color={colors.accent} />
+            <View style={{ flex: 1 }}>
+              <Text style={font.body}>Last clean</Text>
+              <Text style={font.small}>
+                {lastMission ? `${historyWhen(lastMission)} · ${lastMission.doneLabel}` : 'No history yet'}
+              </Text>
+            </View>
+            <Text style={[font.small, { color: colors.accent }]} onPress={() => router.push('/history')}>
+              All
+            </Text>
+          </View>
+        </Card>
+
+        <Card>
+          <View style={styles.dockRow}>
+            <Ionicons name="calendar" size={18} color={colors.accent} />
+            <View style={{ flex: 1 }}>
+              <Text style={font.body}>Schedule</Text>
+              <Text style={font.small}>
+                {nextClean ? `${nextClean.s.name} · ${formatNext(nextClean.at)}` : 'No upcoming clean'}
+              </Text>
+            </View>
+            <Text style={[font.small, { color: colors.accent }]} onPress={() => router.push('/schedules')}>
+              Edit
+            </Text>
+          </View>
+        </Card>
 
         {favorites.length > 0 ? (
           <Card style={{ gap: spacing.sm }}>

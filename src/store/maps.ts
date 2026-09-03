@@ -31,6 +31,7 @@ interface MapsStore {
   toggle: (area: SelectedArea) => void;
   clearSelection: () => void;
   selectedRegions: () => Region[];
+  loadModel: (p2mapId: string, versionId: string, name?: string | null) => Promise<MapModel | null>;
   reset: () => void;
 }
 
@@ -119,6 +120,35 @@ export const useMaps = create<MapsStore>((set, get) => ({
       type: s.type,
       region_name: s.name ?? undefined,
     })),
+
+  loadModel: async (p2mapId, versionId, name) => {
+    const session = getSession();
+    if (!session) return get().active;
+    const key = cacheKey(p2mapId, versionId);
+    try {
+      let bytes = readBytesCache(key);
+      if (!bytes) {
+        const url = await session.rest.getMapBundleUrl(p2mapId, versionId);
+        bytes = await session.rest.downloadBundle(url);
+        writeBytesCache(key, bytes);
+      }
+      let versionDoc: unknown = null;
+      try {
+        versionDoc = await session.rest.getMapVersion(p2mapId, versionId);
+      } catch {
+        /* optional */
+      }
+      return buildMapModel({
+        p2mapId,
+        versionId,
+        name: name ?? null,
+        files: parseBundleFiles(bytes),
+        regionNames: regionNamesFrom({ p2map_id: p2mapId, active_p2mapv_id: versionId }, versionDoc),
+      });
+    } catch {
+      return get().active;
+    }
+  },
 
   reset: () => set({ maps: [], active: null, selected: [], error: null }),
 }));

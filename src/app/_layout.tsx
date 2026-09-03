@@ -35,6 +35,9 @@ export default function RootLayout() {
           <Stack.Screen name="login" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="clean" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+          <Stack.Screen name="schedules" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="history" options={{ animation: 'slide_from_right' }} />
+          <Stack.Screen name="settings" options={{ animation: 'slide_from_right' }} />
         </Stack>
       </QueryClientProvider>
     </GestureHandlerRootView>

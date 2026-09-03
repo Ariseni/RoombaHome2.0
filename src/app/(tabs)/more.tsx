@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 
@@ -8,6 +9,7 @@ import { Button, Card, Pill, Screen, SectionTitle } from '@/ui/components';
 import { colors, font, spacing } from '@/ui/theme';
 
 export default function MoreScreen() {
+  const router = useRouter();
   const robots = useSession((s) => s.robots);
   const robotInfo = useSession((s) => s.robotInfo);
   const selectedBlid = useSession((s) => s.selectedBlid);
@@ -53,6 +55,13 @@ export default function MoreScreen() {
               />
             </View>
           ))}
+        </Card>
+
+        <SectionTitle>Robot</SectionTitle>
+        <Card style={{ gap: spacing.sm }}>
+          <Button title="Settings" variant="secondary" onPress={() => router.push('/settings')} />
+          <Button title="Schedules" variant="secondary" onPress={() => router.push('/schedules')} />
+          <Button title="History" variant="secondary" onPress={() => router.push('/history')} />
         </Card>
 
         <SectionTitle>Connection</SectionTitle>

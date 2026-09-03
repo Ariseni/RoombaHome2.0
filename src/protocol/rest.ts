@@ -123,14 +123,47 @@ export class RestClient {
     return this.request('DELETE', `/v1/user/favorites/${enc(favoriteId)}`, { app_edition: '1' });
   }
 
-  getMissionHistory(blid: string, q: MissionHistoryQuery = {}): Promise<JsonObject> {
+  getUserHouseholds(): Promise<unknown> {
+    return this.request('GET', '/v1/user/households');
+  }
+
+  getSchedules(householdId: string): Promise<unknown> {
+    return this.request('GET', `/v1/households/${enc(householdId)}/settings/schedule`);
+  }
+
+  createSchedules(householdId: string, body: unknown): Promise<JsonObject> {
+    return this.request('POST', `/v1/households/${enc(householdId)}/settings/schedule`, undefined, body) as Promise<JsonObject>;
+  }
+
+  updateSchedules(householdId: string, householdScheduleId: string, body: unknown): Promise<JsonObject> {
+    return this.request(
+      'PUT',
+      `/v1/households/${enc(householdId)}/settings/schedule/${enc(householdScheduleId)}`,
+      undefined,
+      body,
+    ) as Promise<JsonObject>;
+  }
+
+  deleteScheduleContainer(householdId: string, householdScheduleId: string): Promise<unknown> {
+    return this.request('DELETE', `/v1/households/${enc(householdId)}/settings/schedule/${enc(householdScheduleId)}`);
+  }
+
+  getDndSettings(householdId: string): Promise<unknown> {
+    return this.request('GET', `/v1/households/${enc(householdId)}/settings/dnd`);
+  }
+
+  setDndSettings(householdId: string, body: JsonObject): Promise<unknown> {
+    return this.request('PUT', `/v1/households/${enc(householdId)}/settings/dnd`, undefined, body);
+  }
+
+  getMissionHistory(blid: string, q: MissionHistoryQuery = {}): Promise<unknown> {
     const query: Record<string, string> = {};
     if (q.maxReports != null) query.maxReports = String(q.maxReports);
     if (q.maxAge != null) query.maxAge = String(q.maxAge);
     if (q.filterType) query.filterType = q.filterType;
     if (q.exclusiveStartTimestamp != null) query.exclusiveStartTimestamp = String(q.exclusiveStartTimestamp);
     if (q.supportedDoneCodes?.length) query.supportedDoneCodes = q.supportedDoneCodes.join(',');
-    return this.request('GET', `/v1/${enc(blid)}/missionhistory`, query) as Promise<JsonObject>;
+    return this.request('GET', `/v1/${enc(blid)}/missionhistory`, query);
   }
 
   getRobotParts(blid: string): Promise<JsonObject> {
