@@ -29,6 +29,7 @@ export default function TabsLayout() {
     >
       <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: icon('home') }} />
       <Tabs.Screen name="map" options={{ title: 'Map', tabBarIcon: icon('map') }} />
+      <Tabs.Screen name="favorites" options={{ title: 'Favorites', tabBarIcon: icon('star') }} />
       <Tabs.Screen name="dock" options={{ title: 'Dock', tabBarIcon: icon('water') }} />
       <Tabs.Screen name="more" options={{ title: 'More', tabBarIcon: icon('ellipsis-horizontal') }} />
     </Tabs>

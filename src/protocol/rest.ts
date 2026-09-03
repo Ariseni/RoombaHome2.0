@@ -107,8 +107,20 @@ export class RestClient {
 
   // --- Favorites / history / misc ---------------------------------------
 
-  getFavorites(): Promise<unknown> {
-    return this.request('GET', '/v1/user/favorites', { app_edition: '1' });
+  getFavorites(appEdition = '1'): Promise<unknown> {
+    return this.request('GET', '/v1/user/favorites', { app_edition: appEdition });
+  }
+
+  createFavorite(body: unknown): Promise<JsonObject> {
+    return this.request('POST', '/v1/user/favorites', { app_edition: '1' }, body) as Promise<JsonObject>;
+  }
+
+  updateFavorite(favoriteId: string, body: unknown): Promise<JsonObject> {
+    return this.request('PUT', `/v1/user/favorites/${enc(favoriteId)}`, { app_edition: '1' }, body) as Promise<JsonObject>;
+  }
+
+  deleteFavorite(favoriteId: string): Promise<unknown> {
+    return this.request('DELETE', `/v1/user/favorites/${enc(favoriteId)}`, { app_edition: '1' });
   }
 
   getMissionHistory(blid: string, q: MissionHistoryQuery = {}): Promise<JsonObject> {

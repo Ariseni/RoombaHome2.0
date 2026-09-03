@@ -1,12 +1,14 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { simpleCommand } from '@/protocol/commands';
 import { dockStateInfo } from '@/protocol/models/dock';
 import { errorText, notReadyLabel } from '@/protocol/models/errors';
+import { roomsSummary } from '@/protocol/models/favorites';
 import { type Activity, activityOf, phaseLabel } from '@/protocol/models/shadow';
+import { useFavorites } from '@/store/favorites';
 import { useSession } from '@/store/session';
 import { Button, Card, Pill, Screen, Stat } from '@/ui/components';
 import { colors, font, radius, spacing } from '@/ui/theme';
@@ -41,6 +43,14 @@ export default function HomeScreen() {
   const clearError = useSession((s) => s.clearError);
   const refreshState = useSession((s) => s.refreshState);
   const [refreshing, setRefreshing] = useState(false);
+  const favorites = useFavorites((s) => s.items);
+  const loadFavorites = useFavorites((s) => s.load);
+  const favoritesLoaded = useFavorites((s) => s.loaded);
+  const runFavorite = useFavorites((s) => s.run);
+
+  useEffect(() => {
+    if (status === 'connected' && !favoritesLoaded) loadFavorites().catch(() => undefined);
+  }, [status, favoritesLoaded, loadFavorites]);
 
   const activity = activityOf(robot);
   const name = robot.name ?? robotInfo?.name ?? 'Roomba';
@@ -51,11 +61,11 @@ export default function HomeScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await refreshState();
+      await Promise.all([refreshState(), loadFavorites()]);
     } finally {
       setRefreshing(false);
     }
-  }, [refreshState]);
+  }, [refreshState, loadFavorites]);
 
   const cmd = (c: Parameters<typeof simpleCommand>[0], label: string) => () => sendCommand(simpleCommand(c), label);
 
@@ -149,6 +159,35 @@ export default function HomeScreen() {
           onDock={cmd('dock', 'dock')}
           onFind={cmd('find', 'find')}
         />
+
+        {favorites.length > 0 ? (
+          <Card style={{ gap: spacing.sm }}>
+            <View style={styles.dockRow}>
+              <Ionicons name="star" size={18} color={colors.accent} />
+              <Text style={[font.body, { flex: 1 }]}>Favorites</Text>
+              <Text style={[font.small, { color: colors.accent }]} onPress={() => router.push('/(tabs)/favorites')}>
+                All
+              </Text>
+            </View>
+            {favorites.slice(0, 4).map((fav) => (
+              <View key={fav.favorite_id} style={styles.favRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={font.body}>{fav.name}</Text>
+                  <Text style={font.small} numberOfLines={1}>
+                    {roomsSummary(fav)}
+                  </Text>
+                </View>
+                <Button
+                  title="Run"
+                  compact
+                  disabled={!connected}
+                  loading={commandBusy === `fav:${fav.name}`}
+                  onPress={() => runFavorite(fav)}
+                />
+              </View>
+            ))}
+          </Card>
+        ) : null}
 
         {robot.dock ? (
           <Card>
@@ -279,4 +318,5 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', marginTop: spacing.lg, gap: spacing.sm },
   controlsRow: { flexDirection: 'row', gap: spacing.sm },
   dockRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  favRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
 });

@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
@@ -9,6 +10,7 @@ import { Button, Card, EmptyState, Pill, Screen } from '@/ui/components';
 import { colors, font, radius, spacing } from '@/ui/theme';
 
 export default function MapScreen() {
+  const router = useRouter();
   const { width, height } = useWindowDimensions();
   const status = useSession((s) => s.status);
   const sendCommand = useSession((s) => s.sendCommand);
@@ -104,6 +106,9 @@ export default function MapScreen() {
               {selected.length === 0 ? 'Tap rooms to clean them' : `${selected.length} selected`}
             </Text>
             {selected.length > 0 ? <Button title="Clear" variant="ghost" compact onPress={clearSelection} /> : null}
+            {selected.length > 0 ? (
+              <Button title="Save" variant="secondary" compact onPress={() => router.push('/(tabs)/favorites')} />
+            ) : null}
             <Button
               title={selected.length ? 'Clean selected' : 'Pick rooms'}
               compact

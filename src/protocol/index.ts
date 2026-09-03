@@ -12,6 +12,7 @@ export * from './models/shadow';
 export * from './models/dock';
 export * from './models/errors';
 export * from './models/livemap';
+export * from './models/favorites';
 export * from './maps/geometry';
 export * from './maps/bundle';
 export { unpackTarGz, untar } from './maps/tar';
