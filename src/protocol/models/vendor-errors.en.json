@@ -1,0 +1,450 @@
+{
+ "1": {
+  "title": "@val moved or on an uneven surface",
+  "content": "Move @val to a new, flat surface. If it is already on a flat surface, you may need to reboot it. (1)"
+ },
+ "2": {
+  "title": "Main Brush stuck",
+  "content": "Clear obstacles or tangled fibers from the brush so it can spin freely. (2)"
+ },
+ "4": {
+  "title": "Left Wheel stuck",
+  "content": "Push Left/Right Wheel up and down a few times, then spin it to loosen trapped debris. It should spin freely. (4)"
+ },
+ "5": {
+  "title": "Right Wheel stuck",
+  "content": "Push Left/Right Wheel up and down a few times, then spin it to loosen trapped debris. It should spin freely. (5)"
+ },
+ "6": {
+  "title": "Clean Cliff Sensors",
+  "content": "Clean the bottom Cliff Sensors with a soft, dry cloth so stairs can be accurately detected. Place @val on the floor and press the start button to resume cleaning. (6)"
+ },
+ "7": {
+  "title": "Left wheel sensor issue",
+  "content": "Restart @val to fix the issue. Move the Robot out of the Dock, hold the Power button for 10s then 3s. (7)"
+ },
+ "9": {
+  "title": "Bumper is stuck",
+  "content": "Clear any objects that may be wedged behind @val’s front bumper. (9)"
+ },
+ "10": {
+  "title": "Right wheel sensor issue",
+  "content": "Restart @val to fix the issue. Move the Robot out of the Dock, hold the Power button for 10s then 3s. (10)"
+ },
+ "12": {
+  "title": "Cliff sensor stall",
+  "content": "Restart @val to fix the issue. Move the Robot out of the Dock, hold the Power button for 10s then 3s. (12)"
+ },
+ "14": {
+  "title": "@val’s bin is missing",
+  "content": "Please make sure @val’s bin is installed and the sensors are clean. Use a soft, dry cloth to clean.(14)"
+ },
+ "16": {
+  "title": "@val was moved or is on an uneven surface",
+  "content": "Move @val to a new, flat surface. If it is already on a flat surface, you may need to reboot it. (16)"
+ },
+ "18": {
+  "title": "@val couldn't return to Dock. Move and place it on the Dock for charging.",
+  "content": "Make sure the path is clear for @val to return to its dock. Check that the dock is plugged in and in its original location. (18)"
+ },
+ "19": {
+  "title": "Unable to leave dock: obstacle in the way",
+  "content": "@val was unable to leave its dock. Clear obstacles around the dock so it has enough room to come and go. (19)"
+ },
+ "22": {
+  "title": "@val is stuck",
+  "content": "Move it to an open area and press the Power button to resume. Clear obstacles and open doors. (22)"
+ },
+ "24": {
+  "title": "Navigation Issue",
+  "content": "Move @val to a flat surface and press the Power button to resume. (24)"
+ },
+ "26": {
+  "title": "Vacuum motor is stalled",
+  "content": "@val’s filter may be clogged. Remove filter from dust bin and tap it out over a trash bin to clear built-up debris. (26)"
+ },
+ "29": {
+  "title": "Robot software is updating",
+  "content": "This can take up to 20 minutes. If it takes longer than 20 minutes, reboot @val. (29)"
+ },
+ "30": {
+  "title": "Vacuum motor issue",
+  "content": "Restart @val to fix the issue. Move the Robot out of the Dock, hold the Power button for 10s then 3s. (30)"
+ },
+ "32": {
+  "title": "@val couldn’t get to the requested map areas",
+  "content": "Make sure @val can reach the areas on the map used for this routine. This issue can happen with multiple maps that don’t connect. (32)"
+ },
+ "33": {
+  "title": "@val got trapped by furniture or a door",
+  "content": "Make sure doors are open all the way and there is enough space around furniture for @val to maneuver around. (33)"
+ },
+ "35": {
+  "title": "No mop attached",
+  "content": "Attach @val's mop to enable mopping. (35)"
+ },
+ "36": {
+  "title": "Dustbin may be full or Air Duct is blocked. Clean it",
+  "content": "Empty @val’s Dustbin and clear any possible obstructions to the Dust Compactor and Air Duct. (36)"
+ },
+ "42": {
+  "title": "@val couldn’t reach one of your rooms",
+  "content": "Open doors and clear obstacles that could be blocking its path and try again. (42)"
+ },
+ "44": {
+  "title": "Robot water bin pump may be blocked",
+  "content": "Please view our help article for steps to troubleshoot this issue. (44)"
+ },
+ "46": {
+  "title": "Battery too low to clean",
+  "content": "Place @val on its dock and allow it to charge sufficiently. You can check battery status here in the Robots tab. (46)"
+ },
+ "47": {
+  "title": "Important update available – we’re here to help",
+  "content": "Go to the Support tab from the bottom app menu and contact our team so we can remotely update your robot.\nThis will update a sensor that helps @val work properly. (47)"
+ },
+ "48": {
+  "title": "An obstacle blocked the entrance to a room",
+  "content": "Make sure doors are open and free from obstacles. It’s also a good idea to check that your map accurately represents your space. (48)"
+ },
+ "66": {
+  "title": "Memory storage needs a quick reboot",
+  "content": "To reboot, remove from dock, press and hold Power button for 10 seconds to Power off, press and hold again for 3 seconds to Power back on. (66）"
+ },
+ "68": {
+  "title": "Camera unable to detect objects and obstacles",
+  "content": "Restart @val to fix the issue. Move the Robot out of the Dock, hold the Power button for 10s then 3s. (68)"
+ },
+ "69": {
+  "title": "@val was unable to find its way home",
+  "content": "Make sure doors are open and that nothing is blocking the path to the dock. Place @val on dock if its battery has run out. (69)"
+ },
+ "101": {
+  "title": "Charging Issue: battery not detected",
+  "content": "@val is having trouble detecting its battery. Remove and reinstall battery to clear. (101)"
+ },
+ "102": {
+  "title": "Charging Issue: unable to charge",
+  "content": "@val is having trouble detecting its battery. Remove and reinstall battery to clear. (102)"
+ },
+ "103": {
+  "title": "Charging Issue: unable to charge",
+  "content": "@val is having trouble detecting its battery. Remove and reinstall battery to clear. (103)"
+ },
+ "104": {
+  "title": "Charging Issue: contacts need to be cleaned",
+  "content": "Unplug the Dock Power, then wipe the Charging Contacts on Robot and Dock with a slightly damp tissue. (104)"
+ },
+ "105": {
+  "title": "Charging Issue: contacts need to be cleaned",
+  "content": "Unplug the Dock Power, then wipe the Charging Contacts on Robot and Dock with a slightly damp tissue. (105)"
+ },
+ "106": {
+  "title": "Charging Issue: Wait for the battery to cool down and try again",
+  "content": "Make sure @val and dock are stored in a room temperature location. Move away from heat source. (106)"
+ },
+ "107": {
+  "title": "Charging Issue: Wait for the battery to cool down and try again",
+  "content": "Make sure @val and Dock are stored in a room temperature location. Move away from heat source. (107)"
+ },
+ "109": {
+  "title": "Charging Issue: unable to charge",
+  "content": "@val is having trouble detecting its battery. Remove battery, wait 15 minutes, and reinstall to clear. (109)"
+ },
+ "110": {
+  "title": "Charging Issue: Contact customer service to replace the battery",
+  "content": "Please replace @val’s battery. Make sure you use an authentic iRobot battery for your robot model. (110)"
+ },
+ "111": {
+  "title": "Charging Issue: unable to charge",
+  "content": "@val is having trouble detecting its battery. Remove battery, wait 15 minutes, and reinstall to clear. (111)"
+ },
+ "114": {
+  "title": "Charging Issue",
+  "content": "Restart @val to fix the issue. Move the Robot out of the Dock, hold the Power button for 10s then 3s. (114)"
+ },
+ "115": {
+  "title": "Charging Issue: Contact customer service to replace the battery",
+  "content": "Please replace @val’s battery. Make sure you use an authentic iRobot battery for your robot model. (115)"
+ },
+ "117": {
+  "title": "Charging Issue: unable to charge",
+  "content": "@val is having trouble detecting its battery. Remove battery, wait 15 minutes, and reinstall to clear. (117)"
+ },
+ "119": {
+  "title": "Charging Issue: contacts need to be cleaned",
+  "content": "Unplug the Dock, then wipe the Charging Contacts on Robot and Dock with a slightly damp tissue. (119)"
+ },
+ "120": {
+  "title": "Charging Issue: unable to charge",
+  "content": "@val is having trouble detecting its battery. Remove battery, wait 15 minutes, and reinstall to clear. (120)"
+ },
+ "121": {
+  "title": "Charging Issue: contacts need to be cleaned",
+  "content": "Unplug the Dock, then wipe the Charging Contacts on Robot and Dock with a slightly damp tissue. (121)"
+ },
+ "201": {
+  "title": "Unable to start: stairs or drop-off detected",
+  "content": "Please move @val to a new location and try again. (201)"
+ },
+ "202": {
+  "title": "Robot is suspended",
+  "content": "The Robot has detected that it is suspended in mid-air. Please move it to a new location and start again."
+ },
+ "207": {
+  "title": "Unable to start: bin not installed",
+  "content": "Please install @val’s bin and try again. (207)"
+ },
+ "210": {
+  "title": "Unable to start: stuck in a Keep Out Zone",
+  "content": "Move @val out of the Keep Out Zone so it can start its new routine. (210)"
+ },
+ "215": {
+  "title": "Unable to start: battery low, recharge it",
+  "content": "Please allow @val to charge its battery sufficiently and try again. (215)"
+ },
+ "216": {
+  "title": "Unable to start: bin full or clogged",
+  "content": "Empty @val’s bin and clear any possible obstructions to the dust compactor and plenum is clear. (216)"
+ },
+ "218": {
+  "title": "Unable to start: robot update in progress",
+  "content": "Leave @val on its Dock until update is complete. Cleaning will be available shortly. (218)"
+ },
+ "222": {
+  "title": "Unable to start: Navigation Module issue, restart the Robot",
+  "content": "Move @val to a new location and try again. (222)"
+ },
+ "224": {
+  "title": "Unable to start: Map issue, please remap",
+  "content": "Check that @val's map is accurate and try again. (224)"
+ },
+ "228": {
+  "title": "Unable to start: Update to the latest version",
+  "content": "Go to the Support tab from the bottom app menu and contact our team so we can remotely update your robot.\nThis will update a sensor that helps @val work properly. (228)"
+ },
+ "231": {
+  "title": "Unable to start: Clean Water Tank level low",
+  "content": "Fill up the Clean Water Tank and try again. (231)"
+ },
+ "234": {
+  "title": "Unable to start: no mop attached",
+  "content": "Please attach a mop and try again. (234)"
+ },
+ "237": {
+  "title": "Unable to start: no battery detected",
+  "content": "Please install @val's battery and try again. (237)"
+ },
+ "238": {
+  "title": "Unable to start: no battery detected",
+  "content": "Please install @val's battery and try again. (238)"
+ },
+ "239": {
+  "title": "Unable to start: saving map",
+  "content": "Cleaning will be available shortly. (239)"
+ },
+ "251": {
+  "title": "Unable to start: camera issue",
+  "content": "%robotName can’t navigate because of a camera issue. To clear error, press and hold clean button for 10 seconds. (Error 251)"
+ },
+ "266": {
+  "title": "Unable to start: issue with iRobot Select subscription",
+  "content": "Please visit your Membership Portal to update payment method and check on subscription status. Tap below to login to the portal. (266)"
+ },
+ "268": {
+  "title": "Unable to start: saving map",
+  "content": "Cleaning will be available shortly. (268)"
+ },
+ "283": {
+  "title": "Laser sensor issue",
+  "content": "Restart @val to fix the issue. Move the Robot out of the Dock, hold the Power button for 10s then 3s. (283)"
+ },
+ "284": {
+  "title": "Map Incompatible",
+  "content": "Please delete @val's current map and send it to create a new map from the My Home tab. (284)"
+ },
+ "285": {
+  "title": "Unable to start: robot water tank is currently draining",
+  "content": "Please wait until @val finishes draining its water tank before beginning a new routine. (285)"
+ },
+ "286": {
+  "title": "Ready to clean? Make sure @val is on the floor and ready to roll",
+  "content": ""
+ },
+ "287": {
+  "title": "Unable to vacuum: remove Pad Plate",
+  "content": "Remove @val’s Pad Plate so it can begin its vacuuming routine. (287)"
+ },
+ "290": {
+  "title": "Unable to start mopping: attach Pad Plate",
+  "content": "Attach a Mop Pad to the Pad Plate, and install the Pad Plate onto @val so it's ready to mop. (290)"
+ },
+ "350": {
+  "title": "Bin empty unavailable: bag missing",
+  "content": "Lift Dock Lid and install a new Dust Bag by sliding along the Guide Rails. Place Lid back on Dock. (350)"
+ },
+ "353": {
+  "title": "Bin empty unavailable: bag full",
+  "content": "Lift dock lid and remove the full bag. Install a new bag by sliding the card into the guide rails. Place lid back on dock. (353)"
+ },
+ "360": {
+  "title": "@val can't communicate with its Dock",
+  "content": "View troubleshooting steps to reestablish communication. (360)"
+ },
+ "365": {
+  "title": "Bin empty unavailable: please wait 10 minutes",
+  "content": "It’s best not to empty the bin from the app more than once in a 10 minute period. This protects the motor from overheating. (365)"
+ },
+ "450": {
+  "title": "Dock tank missing",
+  "content": "Install the tank into the dock to enable mopping and mop wash. (450)"
+ },
+ "451": {
+  "title": "Clean Water Tank level low",
+  "content": "Refill Clean Water Tank so @val can continue mopping. If the error persists, restart @val. (451)"
+ },
+ "455": {
+  "title": "Dock pump hardware issue",
+  "content": "Unable to refill @val. Vacuuming is still available but your pump hardware may need to be replaced (Error 455)"
+ },
+ "457": {
+  "title": "Dock communication issue",
+  "content": "Unable to refill @val. Unplug dock and use a damp melamine sponge to scrub charging contacts on robot and dock. (457)"
+ },
+ "464": {
+  "title": "Dock Detergent tank empty",
+  "content": "Fill detergent tank with StayClean™ Mopping Concentrate so it can auto-dispense during mopping. Or turn off feature in Robot Settings. (464)"
+ },
+ "510": {
+  "title": "Dock update in progress",
+  "content": "Please wait for update to complete before cleaning. This should take under 20 minutes. (510)"
+ },
+ "513": {
+  "title": "Mopping and mop wash unavailable: pump issue",
+  "content": "Replug Dock to restart and enable Mopping and Mop Wash. (513)"
+ },
+ "517": {
+  "title": "Mop wash issue: Clean dirty water tank and dock",
+  "content": "Clean @val's Dirty Water Tank with mild soap and check for clogs. Wipe the Dock's Mop Wash Tray and Air Duct Vent with a clean, dry cloth (517)"
+ },
+ "520": {
+  "title": "@val can't communicate with its Dock",
+  "content": "Clean the IR windows on @val and the dock with a clean, dry cloth. (520)"
+ },
+ "653": {
+  "title": "Dirty water tank missing",
+  "content": "Reinstall dirty water tank to enable mopping and mop wash. (653)"
+ },
+ "654": {
+  "title": "Dirty water tank full",
+  "content": "Empty dirty water tank and reinstall to enable mopping and mop wash. (654)"
+ },
+ "660": {
+  "title": "Dock communication issue during mop wash",
+  "content": "Unplug the Dock, then wipe the Charging Contacts on Robot and Dock with a slightly damp tissue. (660)"
+ },
+ "668": {
+  "title": "No mop attached",
+  "content": "Please install or reseat mop to enable mopping and mop wash. (668)"
+ },
+ "669": {
+  "title": "Mop got stuck during mop wash",
+  "content": "Check Mop for obstructions and restart the Robot. Move the Robot out of the Dock and press the power button for 10 seconds to turn it off, then press again for 3 seconds to turn it on. (669)"
+ },
+ "670": {
+  "title": "Mop wash basin needs attention",
+  "content": "Make sure the Dock's Mop Cleaning Tray and Filter are properly installed to enable Mopping and Mop Wash. (670)"
+ },
+ "671": {
+  "title": "Clean Water Tank empty or not installed",
+  "content": "Fill up and install the clean water tank to enable mopping and mop wash. (671)"
+ },
+ "672": {
+  "title": "Dirty water tank is full or not installed",
+  "content": "Empty and install the Dock's Dirty Water Tank to enable Mopping and Mop Wash. (672)"
+ },
+ "751": {
+  "title": "Mop dry unavailable: blower issue",
+  "content": "Unplug the Dock, wait 30s and plug back in. (751)"
+ },
+ "752": {
+  "title": "Mop dry unavailable: mop could not lift to dry",
+  "content": "Check Mop for obstructions and restart the Robot: Move the Robot out of the Dock, hold the Power button for 10s then 3s. (752)"
+ },
+ "756": {
+  "title": "Mop dry unavailable: no mop attached",
+  "content": "Please install or reseat mop. (756)"
+ },
+ "757": {
+  "title": "Mop dry unavailable: dock communication issue",
+  "content": "Unplug the Dock, then wipe the Charging Contacts on Robot and Dock with a slightly damp tissue. (757)"
+ },
+ "1000": {
+  "title": "Left side brush is stuck",
+  "content": "Pull tangled fibers and debris from the side brush can spin freely. (1000)"
+ },
+ "1001": {
+  "title": "Right side brush is stuck",
+  "content": "Pull tangled fibers and debris from the side brush can spin freely. (1001)"
+ },
+ "1008": {
+  "title": "Mop lifting motor stalled",
+  "content": "This motor is for @val to lift or lower its mop plate. Check for obstructions around mop and press the Power button to resume Routine. (1008)"
+ },
+ "1010": {
+  "title": "@val couldn't return to Dock. Move and place it on the Dock for charging.",
+  "content": "Make sure the path is clear for @val to return to its Dock. Check that the dock is plugged in and in its original location. (1010)"
+ },
+ "1025": {
+  "title": "Laser sensor issue",
+  "content": "Restart @val to fix the issue. Move the Robot out of the Dock, hold the Power button for 10s then 3s. (1025)"
+ },
+ "1026": {
+  "title": "Mop is tangled or stuck",
+  "content": "Check mop for tangles or obstructions and press Power button to resume routine. (1026)"
+ },
+ "1027": {
+  "title": "Clean water tank is not in place or water level is too low",
+  "content": "Check whether the clean water tank is properly installed and see if it needs refilling."
+ },
+ "1028": {
+  "title": "Dirty water tank or washing basin may be clogged.",
+  "content": "Check for leaks around the dock and empty the robot dirty water Container. Next, follow steps to troubleshoot and clear any possible clogs. (1028)"
+ },
+ "1029": {
+  "title": "Map Incompatible",
+  "content": "Please delete @val's current map and send it to create a new map from the My Home tab. (1029)"
+ },
+ "1030": {
+  "title": "@val got stuck in a No Mop Zone",
+  "content": "Move @val to a new location and resume cleaning. (1030)"
+ },
+ "1034": {
+  "title": "Pad Plate came off",
+  "content": "Reinstall @val’s Pad Plate and press the Power button to resume mopping. (1034)"
+ },
+ "3212": {
+  "title": "Unable to start: Reconnect your phone to Wi-Fi",
+  "content": "Check that your phone is connected to Wi-Fi. If you’re still having issues, reconnect using Cellular Data. (C210)"
+ },
+ "3310": {
+  "title": "Robot connection abnormal",
+  "content": "Tap “Show me how” to follow quick steps to reconnect the app and get @val back to cleaning. (C310)"
+ },
+ "4001": {
+  "title": "@val is having some trouble updating",
+  "content": "Keep @val on its dock and make sure you have a good Wi-Fi connection.\nCertain features will not be available until update is complete. We will continue retrying the update in the background. (4001)"
+ },
+ "4002": {
+  "title": "@val is having some trouble updating",
+  "content": "Make sure @val is docked with a good Wi-Fi connection. We'll keep trying the update in the background and send a notification when it's complete. (4002)"
+ },
+ "4003": {
+  "title": "Robot is updating",
+  "content": "This can take up to 1h. Keep @val on its Dock until update is complete. (4003)"
+ },
+ "4004": {
+  "title": "Robot is updating",
+  "content": "This can take up to 1h. Keep @val on its Dock until update is complete. (4004)"
+ }
+}
