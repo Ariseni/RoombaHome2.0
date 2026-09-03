@@ -1,56 +1,47 @@
-# Welcome to your Expo app 👋
+# Roomba Home 2.0
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Unofficial Android app for the **Roomba Plus 505 AutoWash** (Prime/V4 cloud protocol). Faster, local-first UI that talks to iRobot's own servers — no third-party backend.
 
-## Get started
+Not affiliated with iRobot. Initial robot Wi-Fi setup, account creation, firmware updates and Matter/Alexa linking still require the official Roomba Home app.
 
-1. Install dependencies
+## What it does
 
-   ```bash
-   npm install
-   ```
+- Sign in with your iRobot account (credentials stay on the phone, Android Keystore)
+- Live status: battery, phase, bin/tank, vendor error text
+- Start / pause / resume / stop / dock / find
+- Whole-house clean with vacuum / mop / combo, suction and pad wetness
+- Map with room/zone tap-to-select and targeted cleaning
+- AutoWash dock: empty bin, wash pads, dry pads, refill
+- Live map trail while cleaning
 
-2. Start the app
+## Protocol spike (no UI)
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Close the official Roomba app first (iRobot limits concurrent sessions).
 
 ```bash
-npm run reset-project
+ROOMBA_USER=you@example.com ROOMBA_PASS='secret' ROOMBA_COUNTRY=DE npm run spike
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Optional: `ROOMBA_FIND=1` (chime), `ROOMBA_WATCH=30`, `ROOMBA_LIVEMAP=1`, `ROOMBA_DUMP=./tmp-dump`.
 
-### Other setup steps
+## Install on the S24+
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+Needs Android SDK + JDK (Android Studio is enough). USB debugging on, phone plugged in.
 
-## Learn more
+```bash
+npm install
+npm run keystore          # once — creates credentials/release.jks (git-ignored)
+npm run run:android       # prebuild + signed release APK + adb install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+Or separately: `npm run build:android` then `npm run install:android`.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Dev
 
-## Join the community
+```bash
+npm test
+npm run typecheck
+npx expo start            # Metro, for a debug build already on the device
+```
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+`src/protocol/` is pure TypeScript (no React Native) so the spike and tests run in Node.
