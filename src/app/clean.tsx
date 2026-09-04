@@ -1,24 +1,44 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { type CleanMode, type CleanOptions, type SuctionLevel, type WetnessLevel, buildParams, startCommand, supportedCleanModes } from '@/protocol/commands';
+import {
+  type CleanMode,
+  type CleanOptions,
+  type SuctionLevel,
+  type WetnessLevel,
+  buildParams,
+  regionCommand,
+  startCommand,
+  supportedCleanModes,
+} from '@/protocol/commands';
+import { useMaps } from '@/store/maps';
 import { useSession } from '@/store/session';
 import { Button, Card, Screen, Segmented } from '@/ui/components';
 import { colors, font, radius, spacing } from '@/ui/theme';
 
 export default function CleanModal() {
   const router = useRouter();
+  const { rooms } = useLocalSearchParams<{ rooms?: string }>();
+  const roomParam = Array.isArray(rooms) ? rooms[0] : rooms;
+  const roomJob = roomParam === '1';
+
   const robot = useSession((s) => s.robot);
   const robotInfo = useSession((s) => s.robotInfo);
   const sendCommand = useSession((s) => s.sendCommand);
   const commandBusy = useSession((s) => s.commandBusy);
+  const selected = useMaps((s) => s.selected);
+  const selectedRegions = useMaps((s) => s.selectedRegions);
+  const active = useMaps((s) => s.active);
+
   const cap = robotInfo?.cap ?? robot.cap;
   const modes = useMemo(() => supportedCleanModes(cap.oMode), [cap.oMode]);
   const suctionCount = cap.suctionLvl ?? 3;
   const wetnessCount = cap.ppWetLvl ?? 3;
 
-  const [mode, setMode] = useState<CleanMode>(modes[0] ?? 'vacuum');
+  const defaultMode: CleanMode =
+    roomJob && modes.includes('vacuum_and_mop') ? 'vacuum_and_mop' : (modes[0] ?? 'vacuum');
+  const [mode, setMode] = useState<CleanMode>(defaultMode);
   const [suction, setSuction] = useState<SuctionLevel>(2);
   const [wetness, setWetness] = useState<WetnessLevel>('moderate');
   const [passes, setPasses] = useState<1 | 2>(1);
@@ -31,16 +51,57 @@ export default function CleanModal() {
     passes,
   };
 
+  const names = selected.map((s) => s.name ?? (s.type === 'zid' ? `Zone ${s.id}` : `Room ${s.id}`));
+  const canStartRooms = roomJob && active && selected.length > 0;
+
   const start = async () => {
-    const ok = await sendCommand(startCommand(buildParams(opts)), 'start');
+    const params = buildParams(opts);
+    if (roomJob) {
+      if (!active || selected.length === 0) return;
+      const blid = robotInfo?.blid ?? useSession.getState().selectedBlid ?? '';
+      const ok = await sendCommand(
+        regionCommand({
+          blid,
+          p2mapId: active.p2mapId,
+          mapVersionId: active.versionId,
+          regions: selectedRegions(),
+          params,
+        }),
+        'start',
+      );
+      if (ok) router.back();
+      return;
+    }
+    const ok = await sendCommand(startCommand(params), 'start');
     if (ok) router.back();
   };
 
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={font.title}>Start cleaning</Text>
-        <Text style={[font.small, { marginBottom: spacing.md }]}>Whole house. Pick rooms on the Map tab instead.</Text>
+        <Text style={font.title}>{roomJob ? 'Clean rooms' : 'Start cleaning'}</Text>
+        <Text style={[font.small, { marginBottom: spacing.md }]}>
+          {roomJob
+            ? selected.length
+              ? names.join(', ')
+              : 'Pick rooms on the Map tab first.'
+            : 'Whole house. Pick rooms on the Map tab for a targeted job.'}
+        </Text>
+
+        <Card>
+          <Text style={styles.label}>Job</Text>
+          <Segmented
+            options={[
+              { value: '1', label: 'Clean' },
+              { value: '2', label: 'Deep clean' },
+            ]}
+            value={String(passes)}
+            onChange={(v) => setPasses(Number(v) as 1 | 2)}
+          />
+          <Text style={[font.small, { marginTop: spacing.sm }]}>
+            {passes === 2 ? 'Two passes over each area.' : 'One pass over each area.'}
+          </Text>
+        </Card>
 
         <Card>
           <Text style={styles.label}>Mode</Text>
@@ -73,19 +134,12 @@ export default function CleanModal() {
           </Card>
         ) : null}
 
-        <Card>
-          <Text style={styles.label}>Passes</Text>
-          <Segmented
-            options={[
-              { value: '1', label: 'One' },
-              { value: '2', label: 'Two' },
-            ]}
-            value={String(passes)}
-            onChange={(v) => setPasses(Number(v) as 1 | 2)}
-          />
-        </Card>
-
-        <Button title="Start" onPress={start} loading={commandBusy === 'start'} />
+        <Button
+          title={roomJob ? (selected.length ? `Clean ${selected.length} selected` : 'Pick rooms first') : 'Start'}
+          onPress={start}
+          loading={commandBusy === 'start'}
+          disabled={roomJob ? !canStartRooms : false}
+        />
         <Button title="Cancel" variant="ghost" onPress={() => router.back()} />
       </ScrollView>
     </Screen>

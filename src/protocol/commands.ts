@@ -202,3 +202,26 @@ export function regionCommand(input: RegionCommandInput): CommandPayload {
   if (input.params) body.params = input.params;
   return body;
 }
+
+/**
+ * Prime robots often end the mission when lifted. `resume` then no-ops.
+ * Re-publish the last start (from our send, or the shadow lastCommand).
+ */
+export function replayStartCommand(raw: Record<string, unknown> | null | undefined): CommandPayload | null {
+  if (!raw || raw.command !== 'start') return null;
+  return { ...raw, command: 'start', time: nowSeconds(), initiator: DEFAULT_INITIATOR };
+}
+
+export function startJobLabel(raw: Record<string, unknown> | null | undefined): string | null {
+  if (!raw || raw.command !== 'start') return null;
+  const regions = Array.isArray(raw.regions) ? raw.regions : [];
+  const names = regions
+    .map((r) => {
+      if (!r || typeof r !== 'object') return '';
+      const o = r as Record<string, unknown>;
+      return String(o.region_name ?? o.region_id ?? '');
+    })
+    .filter(Boolean);
+  if (names.length) return names.join(', ');
+  return 'Whole house';
+}

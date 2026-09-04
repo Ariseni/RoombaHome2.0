@@ -12,9 +12,11 @@ import {
   writeJsonCache,
 } from '@/lib/storage';
 import type { CommandPayload } from '@/protocol/commands';
+import { replayStartCommand, simpleCommand } from '@/protocol/commands';
 import { AuthCredentialsError, AuthRateLimitedError } from '@/protocol/errors';
+import { isPickedUp } from '@/protocol/models/errors';
 import type { LiveMapMessage, PositionSample } from '@/protocol/models/livemap';
-import { type RobotState, emptyState } from '@/protocol/models/shadow';
+import { type RobotState, emptyState, interruptionFromTransition, isActiveMissionCycle } from '@/protocol/models/shadow';
 import { type ConnectionStatus, RobotSession } from '@/protocol/session';
 import type { Credentials, LoginResult, RobotLoginEntry } from '@/protocol/types';
 
@@ -41,6 +43,9 @@ interface SessionStore {
   commandBusy: string | null;
   lastError: string | null;
   liveMap: { samples: PositionSample[]; lastSeq: number; mapUrl: string | null; active: boolean };
+  lastStart: CommandPayload | null;
+  interrupted: boolean;
+  lastIntent: 'start' | 'stop' | 'dock' | 'pause' | 'resume' | null;
 
   bootstrap: () => Promise<void>;
   signIn: (creds: Credentials) => Promise<void>;
@@ -48,6 +53,7 @@ interface SessionStore {
   selectRobot: (blid: string) => Promise<void>;
   reconnect: () => Promise<void>;
   sendCommand: (payload: CommandPayload, label?: string) => Promise<boolean>;
+  continueMission: () => Promise<boolean>;
   refreshState: () => Promise<void>;
   startLiveMap: () => Promise<void>;
   stopLiveMap: () => void;
@@ -80,7 +86,12 @@ export function getSession(): RobotSession | null {
 }
 
 const LAST_STATE_KEY = 'last-state';
+const LAST_JOB_KEY = 'last-job';
 const MAX_LIVE_SAMPLES = 4000;
+
+function persistJob(lastStart: CommandPayload | null, interrupted: boolean): void {
+  writeJsonCache(LAST_JOB_KEY, { lastStart, interrupted });
+}
 
 export const useSession = create<SessionStore>((set, get) => {
   function attach(s: RobotSession): void {
@@ -92,7 +103,28 @@ export const useSession = create<SessionStore>((set, get) => {
       set({ login: r, robots: Object.values(r.robots) });
     });
     s.on('state', (state) => {
-      set({ robot: state, robotInfo: s.robotInfo });
+      const prev = get().robot;
+      const lastIntent = get().lastIntent;
+      let interrupted = get().interrupted;
+      let lastStart = get().lastStart;
+      if (state.lastCommand?.command === 'start') {
+        lastStart = replayStartCommand(state.lastCommand) ?? lastStart;
+      }
+      if (lastIntent === 'stop' || lastIntent === 'dock') {
+        interrupted = false;
+        if (!isActiveMissionCycle(state.mission.cycle)) {
+          persistJob(lastStart, false);
+          set({ robot: state, robotInfo: s.robotInfo, interrupted: false, lastIntent: null, lastStart });
+          writeJsonCache(LAST_STATE_KEY, state);
+          return;
+        }
+      } else if (state.mission.phase === 'run' && isActiveMissionCycle(state.mission.cycle)) {
+        interrupted = false;
+      } else if (interruptionFromTransition(prev, state)) {
+        interrupted = true;
+      }
+      persistJob(lastStart, interrupted);
+      set({ robot: state, robotInfo: s.robotInfo, interrupted, lastStart });
       writeJsonCache(LAST_STATE_KEY, state);
     });
     s.on('dockReport', (d) => {
@@ -178,11 +210,16 @@ export const useSession = create<SessionStore>((set, get) => {
     commandBusy: null,
     lastError: null,
     liveMap: { samples: [], lastSeq: -1, mapUrl: null, active: false },
+    lastStart: null,
+    interrupted: false,
+    lastIntent: null,
 
     bootstrap: async () => {
       ensureAppStateListener();
       const cached = readJsonCache<RobotState>(LAST_STATE_KEY);
       if (cached) set({ robot: cached });
+      const job = readJsonCache<{ lastStart: CommandPayload | null; interrupted: boolean }>(LAST_JOB_KEY);
+      if (job) set({ lastStart: job.lastStart ?? null, interrupted: !!job.interrupted });
       const creds = await loadCredentials();
       if (!creds) {
         set({ authState: 'signedOut' });
@@ -227,7 +264,11 @@ export const useSession = create<SessionStore>((set, get) => {
         dockReports: [],
         timeline: [],
         liveMap: { samples: [], lastSeq: -1, mapUrl: null, active: false },
+        lastStart: null,
+        interrupted: false,
+        lastIntent: null,
       });
+      persistJob(null, false);
       await resetAccountStores();
     },
 
@@ -252,10 +293,24 @@ export const useSession = create<SessionStore>((set, get) => {
         set({ lastError: 'Not connected' });
         return false;
       }
-      set({ commandBusy: label ?? payload.command, lastError: null });
+      const intent =
+        payload.command === 'start'
+          ? 'start'
+          : payload.command === 'stop'
+            ? 'stop'
+            : payload.command === 'dock'
+              ? 'dock'
+              : payload.command === 'pause'
+                ? 'pause'
+                : payload.command === 'resume'
+                  ? 'resume'
+                  : get().lastIntent;
+      const lastStart = payload.command === 'start' ? payload : get().lastStart;
+      const interrupted = payload.command === 'start' || payload.command === 'stop' || payload.command === 'dock' ? false : get().interrupted;
+      persistJob(lastStart, interrupted);
+      set({ commandBusy: label ?? payload.command, lastError: null, lastIntent: intent, lastStart, interrupted });
       try {
         await session.sendCommand(payload);
-        // The robot reflects the change in its shadow shortly after.
         setTimeout(() => session?.refreshState().catch(() => undefined), 1500);
         return true;
       } catch (e) {
@@ -264,6 +319,16 @@ export const useSession = create<SessionStore>((set, get) => {
       } finally {
         set({ commandBusy: null });
       }
+    },
+
+    continueMission: async () => {
+      const { robot, sendCommand } = get();
+      if (isPickedUp(robot.mission.notReady)) {
+        set({ lastError: 'Set it on the floor first. It will look around, then continue the same job.' });
+        return false;
+      }
+      // resume only — a new start would re-clean already finished rooms.
+      return sendCommand(simpleCommand('resume'), 'resume');
     },
 
     refreshState: async () => {

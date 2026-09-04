@@ -223,10 +223,53 @@ export type Activity =
   | 'refilling'
   | 'unknown';
 
+export function isActiveMissionCycle(cycle: string | null | undefined): boolean {
+  return !!cycle && cycle !== 'none';
+}
+
+/** Paused with a live cycle — `resume` still works. */
+export function canResumeMission(s: RobotState): boolean {
+  return activityOf(s) === 'paused' && isActiveMissionCycle(s.mission.cycle);
+}
+
+/** Mission is interrupted but can be continued (pause, pickup, cliff). */
+export function canContinueMission(s: RobotState): boolean {
+  const a = activityOf(s);
+  return a === 'paused' || a === 'stuck';
+}
+
+/**
+ * Pickup on Prime often jumps run → stop with cycle `none`. That is not
+ * "returning to dock"; the job is gone and must be started again.
+ */
+export function interruptionFromTransition(prev: RobotState, next: RobotState): boolean {
+  const prevPhase = prev.mission.phase;
+  const nextPhase = next.mission.phase;
+  if (nextPhase === 'hmPostMsn' || nextPhase === 'hmMidMsn' || nextPhase === 'hmUsrDock' || nextPhase === 'charge') {
+    return false;
+  }
+  const wasWorking = prevPhase === 'run' || prevPhase === 'pause' || prevPhase === 'stuck';
+  const cycleDropped = isActiveMissionCycle(prev.mission.cycle) && !isActiveMissionCycle(next.mission.cycle);
+  if (wasWorking && cycleDropped) return true;
+  if (wasWorking && (nextPhase === 'stop' || nextPhase === 'idle')) return true;
+  if (nextPhase === 'stuck') return true;
+  return false;
+}
+
+export function isMissionActivity(a: Activity): boolean {
+  return a === 'cleaning' || a === 'paused' || a === 'returning' || a === 'stuck';
+}
+
 /** Collapses cycle/phase/error into one UI-friendly activity. */
 export function activityOf(s: RobotState): Activity {
   const { phase, cycle, error } = s.mission;
-  if (error && error !== 0) return 'error';
+  // Pickup / cliff / wheels-dropped still have a live mission. Treat those as
+  // stuck so Home can offer Continue (resume) instead of a new clean.
+  if (phase === 'stuck') return 'stuck';
+  if (error && error !== 0) {
+    if (isActiveMissionCycle(cycle) && phase !== 'charge') return 'stuck';
+    return 'error';
+  }
   switch (phase) {
     case 'charge':
       return 'charging';
@@ -235,8 +278,6 @@ export function activityOf(s: RobotState): Activity {
       return 'cleaning';
     case 'pause':
       return 'paused';
-    case 'stuck':
-      return 'stuck';
     case 'hmPostMsn':
     case 'hmMidMsn':
     case 'hmUsrDock':
@@ -275,7 +316,7 @@ export const PHASE_LABELS: Record<string, string> = {
   pause: 'Paused',
   stop: 'Ready',
   idle: 'Ready',
-  stuck: 'Stuck',
+  stuck: 'Set down to continue',
   hmPostMsn: 'Returning to dock',
   hmMidMsn: 'Returning to recharge',
   hmUsrDock: 'Returning to dock',

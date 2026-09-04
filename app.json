@@ -2,7 +2,7 @@
   "expo": {
     "name": "Roomba Home 2.0",
     "slug": "roomba-home-2",
-    "version": "0.1.0",
+    "version": "0.1.2",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "roombahome2",
@@ -10,7 +10,7 @@
     "platforms": ["android"],
     "android": {
       "package": "com.ivolj.roombahome2",
-      "versionCode": 1,
+      "versionCode": 3,
       "adaptiveIcon": {
         "backgroundColor": "#0F172A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",

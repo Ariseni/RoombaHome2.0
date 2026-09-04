@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildParams, regionCommand, simpleCommand, supportedCleanModes } from '../commands';
+import { buildParams, regionCommand, replayStartCommand, simpleCommand, startJobLabel, supportedCleanModes } from '../commands';
 import { dockStateInfo } from '../models/dock';
 import { errorText } from '../models/errors';
 import { parseLiveMapMessage } from '../models/livemap';
-import { activityOf, emptyState, mergeReported } from '../models/shadow';
+import { activityOf, canContinueMission, emptyState, interruptionFromTransition, mergeReported } from '../models/shadow';
 
 describe('commands', () => {
   it('simple command carries time and initiator', () => {
@@ -44,6 +44,22 @@ describe('commands', () => {
     expect(supportedCleanModes(550)).toEqual(['vacuum', 'mop', 'vacuum_and_mop', 'vacuum_then_mop']);
     expect(supportedCleanModes(2)).toEqual(['vacuum']);
   });
+
+  it('replays a last start with a fresh time and initiator', () => {
+    const replayed = replayStartCommand({
+      command: 'start',
+      time: 1,
+      initiator: 'rmtApp',
+      p2map_id: 'M1',
+      regions: [{ region_id: '12', type: 'rid', region_name: 'Kitchen' }],
+    });
+    expect(replayed?.command).toBe('start');
+    expect(replayed?.initiator).toBe('localApp');
+    expect(replayed?.time).toBeGreaterThan(1);
+    expect(replayed?.p2map_id).toBe('M1');
+    expect(startJobLabel(replayed)).toBe('Kitchen');
+    expect(replayStartCommand({ command: 'pause' })).toBeNull();
+  });
 });
 
 describe('state', () => {
@@ -56,12 +72,20 @@ describe('state', () => {
     expect(s.mission.phase).toBe('run');
     expect(s.mission.error).toBe(0);
     expect(activityOf(s)).toBe('cleaning');
-    s = mergeReported(s, { cleanMissionStatus: { error: 46 } });
+    s = mergeReported(s, { cleanMissionStatus: { cycle: 'clean', phase: 'stuck', error: 6 } });
+    expect(activityOf(s)).toBe('stuck');
+    expect(canContinueMission(s)).toBe(true);
+    s = mergeReported(s, { cleanMissionStatus: { error: 46, cycle: 'none', phase: 'stop' } });
     expect(activityOf(s)).toBe('error');
     expect(errorText(46, 'Rob')?.title.length).toBeGreaterThan(0);
     s = mergeReported(s, { dock: { state: 301, pwState: 602 } });
     expect(s.dock?.pwState).toBe(602);
     expect(dockStateInfo(602)?.label).toBe('Washing pads');
+    const idle = mergeReported(s, { cleanMissionStatus: { cycle: 'none', phase: 'stop', error: 0 } });
+    const cleaning = mergeReported(emptyState(), { cleanMissionStatus: { cycle: 'clean', phase: 'run', error: 0 } });
+    expect(interruptionFromTransition(cleaning, idle)).toBe(true);
+    const homing = mergeReported(cleaning, { cleanMissionStatus: { cycle: 'clean', phase: 'hmPostMsn' } });
+    expect(interruptionFromTransition(cleaning, homing)).toBe(false);
   });
 
   it('parses live map position updates', () => {

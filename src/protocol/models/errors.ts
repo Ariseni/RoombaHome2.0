@@ -63,3 +63,8 @@ export function notReadyLabel(code: number | null | undefined): string | null {
   if (!code) return null;
   return NOT_READY_LABELS[code] ?? `Not ready (${code})`;
 }
+
+/** Cliff / wheel-drop — robot is in the air or on an edge. */
+export function isPickedUp(notReady: number | null | undefined): boolean {
+  return notReady === 1 || notReady === 2 || notReady === 3 || notReady === 4;
+}

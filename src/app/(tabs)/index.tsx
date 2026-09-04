@@ -3,13 +3,13 @@ import { useRouter } from 'expo-router';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { simpleCommand } from '@/protocol/commands';
+import { replayStartCommand, simpleCommand, startJobLabel } from '@/protocol/commands';
 import { dockStateInfo } from '@/protocol/models/dock';
-import { errorText, notReadyLabel } from '@/protocol/models/errors';
+import { errorText, isPickedUp, notReadyLabel } from '@/protocol/models/errors';
 import { roomsSummary } from '@/protocol/models/favorites';
 import { historyWhen } from '@/protocol/models/history';
 import { formatNext, nextOccurrence } from '@/protocol/models/schedules';
-import { type Activity, activityOf, phaseLabel } from '@/protocol/models/shadow';
+import { type Activity, activityOf, isMissionActivity, phaseLabel } from '@/protocol/models/shadow';
 import { useFavorites } from '@/store/favorites';
 import { useHistory } from '@/store/history';
 import { useSchedules } from '@/store/schedules';
@@ -42,6 +42,9 @@ export default function HomeScreen() {
   const status = useSession((s) => s.status);
   const statusError = useSession((s) => s.statusError);
   const sendCommand = useSession((s) => s.sendCommand);
+  const continueMission = useSession((s) => s.continueMission);
+  const interrupted = useSession((s) => s.interrupted);
+  const lastStart = useSession((s) => s.lastStart);
   const commandBusy = useSession((s) => s.commandBusy);
   const lastError = useSession((s) => s.lastError);
   const clearError = useSession((s) => s.clearError);
@@ -83,6 +86,11 @@ export default function HomeScreen() {
   const err = errorText(robot.mission.error, name);
   const notReady = robot.mission.notReady ? notReadyLabel(robot.mission.notReady) : null;
   const connected = status === 'connected';
+  const replay = replayStartCommand(lastStart ?? robot.lastCommand);
+  const jobLabel = startJobLabel(replay);
+  const lifted = isPickedUp(robot.mission.notReady);
+  const continuable = interrupted || activity === 'stuck' || activity === 'paused';
+  const inOpenJob = isMissionActivity(activity) || interrupted;
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -148,6 +156,15 @@ export default function HomeScreen() {
               <Text style={[font.small, { color: colors.warning }]}>{notReady}</Text>
             </View>
           ) : null}
+          {activity === 'stuck' || interrupted || lifted ? (
+            <Text style={[font.small, { marginTop: spacing.md }]}>
+              {lifted
+                ? 'Set it on the floor. It can look around, then Continue picks up the same job — it will not start over.'
+                : jobLabel
+                  ? `Continue ${jobLabel}. It may look around first, then keep going from here.`
+                  : 'Continue the same job. It may look around first, then keep going from here.'}
+            </Text>
+          ) : null}
 
           <View style={styles.stats}>
             <Stat
@@ -155,7 +172,7 @@ export default function HomeScreen() {
               value={robot.batPct != null ? `${robot.batPct}%` : '—'}
               tone={robot.batPct != null && robot.batPct < 20 ? 'danger' : robot.batPct != null && robot.batPct < 40 ? 'warn' : 'ok'}
             />
-            {activity === 'cleaning' || activity === 'paused' || activity === 'returning' ? (
+            {inOpenJob ? (
               <>
                 <Stat label="Minutes" value={robot.mission.missionMinutes != null ? String(robot.mission.missionMinutes) : '—'} />
                 <Stat label="m² cleaned" value={robot.mission.sqft != null ? sqftToM2(robot.mission.sqft) : '—'} />
@@ -175,12 +192,15 @@ export default function HomeScreen() {
 
         <Controls
           activity={activity}
+          continuable={continuable}
+          inMission={inOpenJob}
+          continueLabel="Continue"
           disabled={!connected}
           busy={commandBusy}
           onClean={() => router.push('/clean')}
           onRooms={() => router.push('/(tabs)/map')}
           onPause={cmd('pause', 'pause')}
-          onResume={cmd('resume', 'resume')}
+          onResume={() => continueMission()}
           onStop={cmd('stop', 'stop')}
           onDock={cmd('dock', 'dock')}
           onFind={cmd('find', 'find')}
@@ -283,6 +303,9 @@ function shorten(s: string): string {
 
 function Controls(p: {
   activity: Activity;
+  continuable: boolean;
+  inMission: boolean;
+  continueLabel: string;
   disabled: boolean;
   busy: string | null;
   onClean: () => void;
@@ -297,13 +320,13 @@ function Controls(p: {
   const primary =
     p.activity === 'cleaning' ? (
       <Button title="Pause" onPress={p.onPause} loading={b('pause')} disabled={p.disabled} icon={<Ionicons name="pause" size={18} color={colors.bg} />} style={{ flex: 1 }} />
-    ) : p.activity === 'paused' ? (
-      <Button title="Resume" onPress={p.onResume} loading={b('resume')} disabled={p.disabled} icon={<Ionicons name="play" size={18} color={colors.bg} />} style={{ flex: 1 }} />
+    ) : p.continuable ? (
+      <Button title={p.continueLabel} onPress={p.onResume} loading={b('resume')} disabled={p.disabled} icon={<Ionicons name="play" size={18} color={colors.bg} />} style={{ flex: 1 }} />
     ) : (
       <Button title="Clean everything" onPress={p.onClean} disabled={p.disabled} icon={<Ionicons name="play" size={18} color={colors.bg} />} style={{ flex: 1 }} />
     );
 
-  const inMission = p.activity === 'cleaning' || p.activity === 'paused' || p.activity === 'returning' || p.activity === 'stuck';
+  const inMission = p.inMission;
 
   return (
     <View style={{ gap: spacing.sm }}>

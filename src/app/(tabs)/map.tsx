@@ -3,22 +3,19 @@ import { useEffect } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { MapCanvas } from '@/features/map/MapCanvas';
-import { type CleanOptions, buildParams, regionCommand } from '@/protocol/commands';
 import { roomToArea, useMaps, zoneToArea } from '@/store/maps';
 import { useSession } from '@/store/session';
 import { Button, Card, EmptyState, Pill, Screen } from '@/ui/components';
-import { colors, font, radius, spacing } from '@/ui/theme';
+import { colors, font, spacing } from '@/ui/theme';
 
 export default function MapScreen() {
   const router = useRouter();
   const { width, height } = useWindowDimensions();
   const status = useSession((s) => s.status);
-  const sendCommand = useSession((s) => s.sendCommand);
-  const commandBusy = useSession((s) => s.commandBusy);
   const liveMap = useSession((s) => s.liveMap);
   const startLiveMap = useSession((s) => s.startLiveMap);
   const stopLiveMap = useSession((s) => s.stopLiveMap);
-  const { loading, error, active, selected, load, toggle, clearSelection, selectedRegions } = useMaps();
+  const { loading, error, active, selected, load, toggle, clearSelection } = useMaps();
 
   useEffect(() => {
     if (status === 'connected' && !active && !loading) load().catch(() => undefined);
@@ -30,22 +27,6 @@ export default function MapScreen() {
   }, [status, startLiveMap, stopLiveMap]);
 
   const canvasH = Math.max(280, height - 380);
-
-  const cleanSelected = async () => {
-    if (!active) return;
-    const regions = selectedRegions();
-    if (regions.length === 0) return;
-    const opts: CleanOptions = { mode: 'vacuum_and_mop' };
-    await sendCommand(
-      regionCommand({
-        blid: useSession.getState().robotInfo?.blid ?? useSession.getState().selectedBlid ?? '',
-        p2mapId: active.p2mapId,
-        regions,
-        params: buildParams(opts),
-      }),
-      'start',
-    );
-  };
 
   return (
     <Screen>
@@ -113,8 +94,7 @@ export default function MapScreen() {
               title={selected.length ? 'Clean selected' : 'Pick rooms'}
               compact
               disabled={selected.length === 0 || status !== 'connected'}
-              loading={commandBusy === 'start'}
-              onPress={cleanSelected}
+              onPress={() => router.push('/clean?rooms=1')}
             />
           </Card>
         </>
@@ -129,5 +109,4 @@ const styles = StyleSheet.create({
   chips: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm, gap: spacing.sm },
   bar: { margin: spacing.lg, flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  unused: { borderRadius: radius.md },
 });
